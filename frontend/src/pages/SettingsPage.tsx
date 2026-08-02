@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
-import { Settings, Sliders, RefreshCw, CheckCircle, Database, Upload } from 'lucide-react';
-import { triggerDataRegeneration, uploadCustomData } from '../services/api';
+import { Settings, Sliders, RefreshCw, CheckCircle, Database, Upload, Trash2, AlertOctagon } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { triggerDataRegeneration, uploadCustomData, resetSessionData } from '../services/api';
+import { useAppStore } from '../store/useAppStore';
 
 export const SettingsPage: React.FC = () => {
+  const { setSelectedTab } = useAppStore();
+  const queryClient = useQueryClient();
+
   const [dormancyDays, setDormancyDays] = useState(180);
   const [forwardingRatio, setForwardingRatio] = useState(80);
   const [velocityThreshold, setVelocityThreshold] = useState(10);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
 
   const [accFile, setAccFile] = useState<File | null>(null);
@@ -19,6 +25,7 @@ export const SettingsPage: React.FC = () => {
     try {
       const res = await triggerDataRegeneration();
       setStatusMsg(res.message || 'Successfully generated new synthetic dataset!');
+      queryClient.invalidateQueries();
     } catch (e: any) {
       setStatusMsg('Data generation triggered.');
     } finally {
@@ -33,6 +40,7 @@ export const SettingsPage: React.FC = () => {
     try {
       const res = await uploadCustomData(accFile, txFile);
       setStatusMsg(res.message || 'Custom dataset ingested successfully!');
+      queryClient.invalidateQueries();
     } catch (e: any) {
       setStatusMsg(`Upload Error: ${e?.response?.data?.detail || e.message}`);
     } finally {
@@ -40,28 +48,49 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
+  const handleFullReset = async () => {
+    if (window.confirm("Are you sure you want to reset all session data? This will clear all uploaded CSVs, graph predictions, and active rings so you can upload a new dataset.")) {
+      setIsResetting(true);
+      setStatusMsg('');
+      try {
+        await resetSessionData();
+        queryClient.invalidateQueries();
+        setStatusMsg("Session reset complete! All old data cleared. System ready for new file upload and predictions.");
+        setAccFile(null);
+        setTxFile(null);
+        setSelectedTab('overview');
+      } catch (e: any) {
+        setStatusMsg(`Reset Error: ${e?.response?.data?.detail || e.message}`);
+      } finally {
+        setIsResetting(false);
+      }
+    }
+  };
+
   return (
     <div className="space-y-6 pb-12">
+      {/* Header */}
       <div className="p-5 bg-[#111827] border border-gray-800 rounded-2xl flex items-center justify-between">
         <div>
           <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
             <Settings className="w-6 h-6 text-blue-400" />
-            Platform &amp; Rule Engine Configuration
+            Platform &amp; Data Session Configuration
           </h2>
-          <p className="text-xs text-gray-400 mt-1">Adjust fraud rule thresholds, custom CSV data uploads, and graph triggers</p>
+          <p className="text-xs text-gray-400 mt-1">Configure rule thresholds, ingest custom datasets, or reset data session for new analysis</p>
         </div>
       </div>
 
+      {/* Grid: Upload & Rule Thresholds */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Custom Data Ingestion Widget */}
         <div className="p-6 bg-[#111827] border border-blue-500/30 rounded-2xl shadow-xl space-y-4">
           <div>
             <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
               <Upload className="w-5 h-5 text-blue-400" />
-              Ingest Production CSV Datasets
+              Ingest Custom Production CSV Datasets
             </h3>
             <p className="text-xs text-gray-400">
-              Upload your production <span className="font-mono text-gray-200">accounts.csv</span> and <span className="font-mono text-gray-200">transactions.csv</span> to run graph algorithms &amp; ML scoring on your real data.
+              Upload your production <span className="font-mono text-gray-200">accounts.csv</span> and <span className="font-mono text-gray-200">transactions.csv</span> to run graph analytics &amp; ML scoring on your real data.
             </p>
           </div>
 
@@ -153,7 +182,7 @@ export const SettingsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Synthetic Generator Trigger */}
+      {/* Synthetic Benchmark Dataset Generator */}
       <div className="p-6 bg-[#111827] border border-gray-800 rounded-2xl shadow-xl flex items-center justify-between">
         <div>
           <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
@@ -173,6 +202,30 @@ export const SettingsPage: React.FC = () => {
           <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
           <span>{isGenerating ? 'Generating 100,000 Transactions...' : 'Re-Generate Synthetic Data'}</span>
         </button>
+      </div>
+
+      {/* BOTTOM RESET SECTION FOR NEW DATA UPLOADS & NEW PREDICTIONS */}
+      <div className="p-6 bg-[#111827] border border-red-500/30 rounded-2xl shadow-2xl space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-red-400" />
+              Reset System Session for New Dataset &amp; Predictions
+            </h3>
+            <p className="text-xs text-gray-400 mt-1">
+              Wipe all currently uploaded CSV files, clear memory graph caches, and reset all predictions so you can upload a completely new dataset.
+            </p>
+          </div>
+
+          <button
+            onClick={handleFullReset}
+            disabled={isResetting}
+            className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-red-600/30 disabled:opacity-50 whitespace-nowrap"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>{isResetting ? 'Resetting System Data...' : 'Reset System for New Data Upload'}</span>
+          </button>
+        </div>
       </div>
 
       {statusMsg && (
