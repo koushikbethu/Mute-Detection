@@ -54,11 +54,11 @@ export const SettingsPage: React.FC = () => {
       setStatusMsg('');
       try {
         await resetSessionData();
-        queryClient.invalidateQueries();
-        setStatusMsg("Session reset complete! All old data cleared. System ready for new file upload and predictions.");
+        queryClient.clear();
         setAccFile(null);
         setTxFile(null);
         setSelectedTab('overview');
+        window.location.reload();
       } catch (e: any) {
         setStatusMsg(`Reset Error: ${e?.response?.data?.detail || e.message}`);
       } finally {

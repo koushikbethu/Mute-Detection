@@ -14,8 +14,9 @@ export const Navbar: React.FC = () => {
       setIsResetting(true);
       try {
         await resetSessionData();
-        queryClient.invalidateQueries();
+        queryClient.clear();
         setSelectedTab('overview');
+        window.location.reload();
       } catch (e) {
         console.error("Reset session note:", e);
       } finally {

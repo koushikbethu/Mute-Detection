@@ -320,19 +320,6 @@ async def upload_custom_data(
             print(f"[!] Note on training on custom dataset: {e}")
 
         graph_engine.load_data()
-
-@router.post("/reset-session")
-def reset_session_data():
-    try:
-        acc_path = os.path.join(DATASET_DIR, "accounts.csv")
-        tx_path = os.path.join(DATASET_DIR, "transactions.csv")
-        rings_path = os.path.join(DATASET_DIR, "rings.json")
-
-        for p in [acc_path, tx_path, rings_path]:
-            if os.path.exists(p):
-                os.remove(p)
-
-        graph_engine.load_data()
         return {
             "status": "SUCCESS",
             "message": f"Successfully ingested {len(acc_df)} accounts and {len(tx_df)} transactions from custom dataset.",
@@ -352,7 +339,10 @@ def reset_session_data():
 
         for p in [acc_path, tx_path, rings_path]:
             if os.path.exists(p):
-                os.remove(p)
+                try:
+                    os.remove(p)
+                except Exception:
+                    pass
 
         graph_engine.load_data()
         return {
