@@ -62,3 +62,8 @@ export const uploadCustomData = async (accountsFile: File, transactionsFile: Fil
   });
   return data;
 };
+
+export const resetSessionData = async () => {
+  const { data } = await apiClient.post('/reset-session');
+  return data;
+};

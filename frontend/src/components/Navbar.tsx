@@ -1,9 +1,28 @@
-import React from 'react';
-import { ShieldAlert, Activity, Search, Bell, UserCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShieldAlert, Activity, Search, Trash2, RefreshCw } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '../store/useAppStore';
+import { resetSessionData } from '../services/api';
 
 export const Navbar: React.FC = () => {
-  const { searchQuery, setSearchQuery } = useAppStore();
+  const { searchQuery, setSearchQuery, setSelectedTab } = useAppStore();
+  const [isResetting, setIsResetting] = useState(false);
+  const queryClient = useQueryClient();
+
+  const handleResetSession = async () => {
+    if (window.confirm("Clear all uploaded data and reset to fresh standby session?")) {
+      setIsResetting(true);
+      try {
+        await resetSessionData();
+        queryClient.invalidateQueries();
+        setSelectedTab('overview');
+      } catch (e) {
+        console.error("Reset session note:", e);
+      } finally {
+        setIsResetting(false);
+      }
+    }
+  };
 
   return (
     <header className="h-16 bg-[#111827] border-b border-gray-800 px-6 flex items-center justify-between sticky top-0 z-40 shadow-lg">
@@ -14,7 +33,7 @@ export const Navbar: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-bold text-white tracking-wide">MuleDetect</h1>
-            <span className="px-2 py-0.5 text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full">v1.0 Enterprise</span>
+            <span className="px-2 py-0.5 text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full">Enterprise</span>
           </div>
           <p className="text-xs text-gray-400">Graph Fraud Intelligence Platform</p>
         </div>
@@ -36,13 +55,17 @@ export const Navbar: React.FC = () => {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg text-xs font-medium">
           <Activity className="w-4 h-4 animate-pulse text-emerald-400" />
-          <span>Neo4j / Graph Engine Active</span>
+          <span>Graph Engine Ready</span>
         </div>
 
-        <button className="relative p-2 text-gray-400 hover:text-white bg-[#1F2937] hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors">
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-ping" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+        <button
+          onClick={handleResetSession}
+          disabled={isResetting}
+          title="Clear uploaded data & reset session"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-red-400 hover:text-white bg-red-500/10 hover:bg-red-600 rounded-lg border border-red-500/30 transition-all shadow-sm"
+        >
+          <Trash2 className="w-4 h-4" />
+          <span className="hidden sm:inline">{isResetting ? 'Resetting...' : 'Clear Session Data'}</span>
         </button>
 
         <div className="flex items-center gap-3 pl-3 border-l border-gray-800">

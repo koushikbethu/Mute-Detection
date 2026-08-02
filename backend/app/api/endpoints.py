@@ -321,6 +321,18 @@ async def upload_custom_data(
 
         graph_engine.load_data()
 
+@router.post("/reset-session")
+def reset_session_data():
+    try:
+        acc_path = os.path.join(DATASET_DIR, "accounts.csv")
+        tx_path = os.path.join(DATASET_DIR, "transactions.csv")
+        rings_path = os.path.join(DATASET_DIR, "rings.json")
+
+        for p in [acc_path, tx_path, rings_path]:
+            if os.path.exists(p):
+                os.remove(p)
+
+        graph_engine.load_data()
         return {
             "status": "SUCCESS",
             "message": f"Successfully ingested {len(acc_df)} accounts and {len(tx_df)} transactions from custom dataset.",
@@ -330,4 +342,23 @@ async def upload_custom_data(
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to ingest custom CSV data: {str(e)}")
+
+@router.post("/reset-session")
+def reset_session_data():
+    try:
+        acc_path = os.path.join(DATASET_DIR, "accounts.csv")
+        tx_path = os.path.join(DATASET_DIR, "transactions.csv")
+        rings_path = os.path.join(DATASET_DIR, "rings.json")
+
+        for p in [acc_path, tx_path, rings_path]:
+            if os.path.exists(p):
+                os.remove(p)
+
+        graph_engine.load_data()
+        return {
+            "status": "SUCCESS",
+            "message": "Session reset complete. All uploaded data cleared."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reset session data: {str(e)}")
 
