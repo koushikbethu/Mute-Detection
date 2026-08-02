@@ -1,0 +1,19 @@
+[
+  "in_degree",
+  "out_degree",
+  "betweenness_centrality",
+  "closeness_centrality",
+  "pagerank",
+  "forwarding_ratio",
+  "dormancy_period",
+  "is_dormant",
+  "transfers_in_10m",
+  "avg_amount",
+  "amount_variance",
+  "component_size",
+  "has_cycle",
+  "hop_distance",
+  "neighbor_risk_score",
+  "fan_out_count",
+  "fan_in_count"
+]

@@ -1,0 +1,35 @@
+{
+  "accuracy": 1.0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1_score": 0.0,
+  "roc_auc": NaN,
+  "confusion_matrix": [
+    [
+      3
+    ]
+  ],
+  "feature_importances": {
+    "in_degree": 0.0,
+    "out_degree": 0.0,
+    "betweenness_centrality": 0.0,
+    "closeness_centrality": 0.0,
+    "pagerank": 0.0,
+    "forwarding_ratio": 0.0,
+    "dormancy_period": 0.0,
+    "is_dormant": 0.0,
+    "transfers_in_10m": 0.0,
+    "avg_amount": 0.0,
+    "amount_variance": 0.0,
+    "component_size": 0.0,
+    "has_cycle": 0.0,
+    "hop_distance": 0.0,
+    "neighbor_risk_score": 0.0,
+    "fan_out_count": 0.0,
+    "fan_in_count": 0.0
+  },
+  "sample_counts": {
+    "train": 12,
+    "test": 3
+  }
+}
